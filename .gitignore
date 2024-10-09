@@ -1,0 +1,32 @@
+# Ignore node_modules in client and server
+client/node_modules/
+server/node_modules/
+
+# Ignore node_modules in root, if applicable
+node_modules/
+
+# Ignore environment files
+.env
+client/.env
+server/.env
+
+# Ignore build directories (commonly created by frontend tools)
+client/build/
+client/dist/
+
+# Ignore log files
+client/npm-debug.log*
+server/npm-debug.log*
+*.log
+
+# Ignore operating system specific files
+.DS_Store
+Thumbs.db
+
+# Ignore IDE specific files
+.vscode/
+.idea/
+
+# Ignore miscellaneous
+client/.cache/
+server/.cache/

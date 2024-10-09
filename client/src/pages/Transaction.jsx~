@@ -1,0 +1,89 @@
+import React, { useEffect, useState } from "react";
+import SearchBar from "../components/SearchBar.jsx";
+import DropDown from "../components/DropDown.jsx";
+import Table from "../components/Table.jsx";
+import Pagination from "../components/Pagination.jsx";
+import axios from "axios";
+import { useLocation, useNavigate } from "react-router-dom"; // Import useLocation and useNavigate
+
+function Transaction() {
+    const [transactionData, setTransactionData] = useState([]);
+    const [currentPage, setCurrentPage] = useState(1);
+    const [perPage, setPerPage] = useState(10);
+    const [totalPages, setTotalPages] = useState(0);
+    const [search, setSearch] = useState("");
+    const [month, setMonth] = useState("");
+    const navigate = useNavigate(); // Get navigate function for URL manipulation
+    const location = useLocation(); // Get current URL location
+
+    // Function to update the URL with the current page and month
+    const updateUrl = (page, month) => {
+        const params = new URLSearchParams(location.search);
+        params.set('page', page); // Update page number in URL
+        if (month) {
+            params.set('month', month); // Update month in URL
+        } else {
+            params.delete('month'); // Remove month if not selected
+        }
+        navigate({ search: params.toString() }); // Use navigate to update the URL
+    };
+
+    useEffect(() => {
+        const params = new URLSearchParams(location.search);
+        const pageFromUrl = parseInt(params.get('page'), 10) || 1; // Get page number from URL or default to 1
+        const monthFromUrl = params.get('month') || ""; // Get month from URL
+
+        setCurrentPage(pageFromUrl); // Set page from URL
+        setMonth(monthFromUrl); // Set month from URL
+
+        axios
+            .get(`http://localhost:3000/transactions?page=${pageFromUrl}&limit=${perPage}&search=${search}&month=${monthFromUrl}`)
+            .then((response) => {
+                setTransactionData(response.data.products);
+                setTotalPages(response.data.Pagination.pageCount);
+            })
+            .catch((error) => {
+                console.log(error);
+            });
+    }, [location.search]); // Fetch data when URL changes
+
+    useEffect(() => {
+        updateUrl(currentPage, month); // Update URL when page or month changes
+    }, [currentPage, month]); // Run this effect whenever currentPage or month changes
+
+    const handlePageChange = (newPage) => {
+        setCurrentPage(newPage); // Update current page when pagination changes
+    };
+
+    return (
+        <>
+            <div className="mx-auto flex justify-center items-center flex-col space-y-4">
+                <div className="bg-blue-200 text-neutral-700 rounded-full px-6 py-4 mt-4">
+                    <h1 className="text-4xl font-bold text-center flex flex-col space-y-4">
+                        <span>Transaction</span>
+                        <span>Dashboard</span>
+                    </h1>
+                </div>
+            </div>
+
+            <div className="flex justify-around mt-10 items-start relative">
+                <SearchBar search={search} setSearch={setSearch} />
+                <DropDown month={month} setMonth={setMonth} />
+            </div>
+
+            <div className="mx-10 my-24 ">
+                <Table products={transactionData} />
+            </div>
+
+            <div>
+                <Pagination
+                    currentPage={currentPage}
+                    totalPages={totalPages}
+                    onPageChange={handlePageChange}
+                />
+            </div>
+        </>
+    );
+}
+
+export default Transaction;
